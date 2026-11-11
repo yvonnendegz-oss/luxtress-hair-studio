@@ -1,0 +1,6 @@
+{
+  "name": "Luxtress Hair Studio",
+  "description": "Elegance Meets Confidence. Luxury hair, braids, nails and beauty for women, men and kids in Kenya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
