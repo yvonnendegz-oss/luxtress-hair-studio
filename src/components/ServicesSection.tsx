@@ -1,17 +1,19 @@
 /**
  * Services Section for Luxtress Hair Studio.
- * - Background: offwhite (#FBF8FE)
- * - Label: "SERVICES", Heading: "Our Services" (Playfair Display 600), Subtext: "Tap any service to see our work."
- * - Audience filter pills: All, Women, Men, Kids (active: purple-600, inactive: outlined in lavender-200)
- * - 3-col desktop / 2-col tablet / 1-col mobile numbered grid
- * - Numeral: italic Playfair Display in purple-600, reflowing with filters
- * - Service name: Playfair Display ~22px in plum-900, hover shifts to purple-600
- * - Thin divider in lavender-200, rotating + / × indicator
- * - Accordion details panel: full-width beneath tapped row on desktop, inline on mobile
- * - "Price: ask us on WhatsApp" line + minimal purple-600 "Book" button
+ * Restyled to Hair Creations style:
+ * - Centred container (max-w-[720px], margin 1.5rem on mobile, ~8% on desktop).
+ * - Heading "Our Services" in Playfair Display.
+ * - Single-column stacked list of all 14 services.
+ * - Each row:
+ *   - Number: small italic serif, lavender, ~0.9rem in a fixed 2.5rem column.
+ *   - Service name: Playfair Display ~1.2rem, weight 400-500, in dark plum.
+ *   - + button: 36px circle with a hairline lavender border.
+ *   - Divider: 1px hairline in soft lavender under each row, lining up with the contents.
+ *   - Row height: ~56-60px on mobile (vertical padding ~1.1rem).
+ * - Tap-to-expand details panel with photos, price note, and WhatsApp booking button.
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SALON_CONFIG, ServiceItem } from '../config/salon';
 import { getPhotosByServiceId, SalonPhoto } from '../data/photos';
@@ -20,7 +22,6 @@ import { notifyLightboxChange } from '../utils/lightboxEvents';
 
 export const ServicesSection: React.FC = () => {
   const [openServiceId, setOpenServiceId] = useState<string | null>(null);
-  const [columnCount, setColumnCount] = useState<number>(3);
 
   // Lightbox state
   const [lightboxState, setLightboxState] = useState<{
@@ -37,38 +38,19 @@ export const ServicesSection: React.FC = () => {
 
   const rowRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Responsive column tracker for clean full-width desktop/tablet accordion positioning
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setColumnCount(3);
-      } else if (window.innerWidth >= 768) {
-        setColumnCount(2);
-      } else {
-        setColumnCount(1);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const filteredServices = SALON_CONFIG.services;
+  const services = SALON_CONFIG.services;
 
   // Toggle service details accordion
   const handleToggleService = (serviceId: string) => {
     setOpenServiceId((prev) => (prev === serviceId ? null : serviceId));
 
-    // On mobile, smoothly scroll opened row into view after state update
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        const el = rowRefs.current[serviceId];
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 150);
-    }
+    // Smoothly scroll opened row into view after state update
+    setTimeout(() => {
+      const el = rowRefs.current[serviceId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
   };
 
   // Lightbox handlers
@@ -124,156 +106,85 @@ export const ServicesSection: React.FC = () => {
     };
   }, [lightboxState.isOpen, lightboxState.images.length]);
 
-  // Break filtered services into rows based on columnCount
-  const chunkedRows = useMemo(() => {
-    const rows: ServiceItem[][] = [];
-    for (let i = 0; i < filteredServices.length; i += columnCount) {
-      rows.push(filteredServices.slice(i, i + columnCount));
-    }
-    return rows;
-  }, [filteredServices, columnCount]);
-
-  const activeService = useMemo(() => {
-    return SALON_CONFIG.services.find((s) => s.id === openServiceId) || null;
-  }, [openServiceId]);
-
   return (
     <section
       id="services"
-      className="scroll-mt-20 bg-[#FBF8FE] text-[#2B0F3F] py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-[#D9C6F2]/30"
+      className="scroll-mt-20 bg-[#FBF8FE] text-[#2B0F3F] py-14 sm:py-20 lg:py-24 border-b border-[#D9C6F2]/30"
       aria-label="Luxtress Hair Studio Services"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Centred Container with 1.5rem margin on mobile, max-width 720px on desktop */}
+      <div className="max-w-[720px] mx-auto px-6 sm:px-8">
         {/* Section Header: Our Services */}
-        <div className="max-w-3xl mb-8 sm:mb-10">
+        <div className="mb-8 sm:mb-10 text-left">
           <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight">
             Our Services
           </h2>
         </div>
 
-        {/* Numbered Services Grid with Responsive Full-Width Expansion */}
-        <div className="space-y-0 transition-opacity duration-300">
-          {chunkedRows.map((row, rowIndex) => {
-            // Check if any service in this row is currently open
-            const isRowActive = row.some((svc) => svc.id === openServiceId);
+        {/* Hair Creations Style Numbered Services List */}
+        <div className="border-t border-[#D9C6F2]">
+          {services.map((service, index) => {
+            const formattedNumber = String(index + 1).padStart(2, '0');
+            const isOpen = openServiceId === service.id;
 
             return (
-              <div key={`row-${rowIndex}`} className="mb-0">
-                {/* Row Grid: 3 cols (desktop), 2 cols (tablet), 1 col (mobile) */}
-                <div
-                  className={`grid gap-x-8 gap-y-0 ${
-                    columnCount === 3
-                      ? 'grid-cols-3'
-                      : columnCount === 2
-                        ? 'grid-cols-2'
-                        : 'grid-cols-1'
-                  }`}
+              <div
+                key={service.id}
+                id={service.id === 'kids-hair' ? 'kids' : undefined}
+                ref={(el) => {
+                  rowRefs.current[service.id] = el;
+                }}
+                className={`border-b border-[#D9C6F2] transition-colors duration-200 ${
+                  service.id === 'kids-hair' ? 'scroll-mt-24' : ''
+                }`}
+              >
+                {/* Service Item Row Trigger */}
+                <button
+                  type="button"
+                  onClick={() => handleToggleService(service.id)}
+                  aria-expanded={isOpen}
+                  className="w-full group text-left flex items-center justify-between min-h-[56px] sm:min-h-[60px] py-[1.1rem] transition-colors duration-200 cursor-pointer select-none"
                 >
-                  {row.map((service) => {
-                    // Reflowed number calculation based on current visible index
-                    const globalIndex = filteredServices.findIndex(
-                      (s) => s.id === service.id
-                    );
-                    const formattedNumber = String(globalIndex + 1).padStart(2, '0');
-                    const isOpen = openServiceId === service.id;
+                  <div className="flex items-center min-w-0 pr-4">
+                    {/* Fixed-width column (~2.5rem): small italic serif, lavender, ~0.9rem */}
+                    <span className="w-[2.5rem] shrink-0 text-left font-heading italic text-[0.9rem] text-[#6A35A8] select-none">
+                      {formattedNumber}
+                    </span>
 
-                    return (
-                      <div
-                        key={service.id}
-                        id={service.id === 'kids-hair' ? 'kids' : undefined}
-                        ref={(el) => {
-                          rowRefs.current[service.id] = el;
-                        }}
-                        className={`flex flex-col ${service.id === 'kids-hair' ? 'scroll-mt-24' : ''}`}
-                      >
-                        {/* Service Item Row Trigger */}
-                        <button
-                          type="button"
-                          onClick={() => handleToggleService(service.id)}
-                          aria-expanded={isOpen}
-                          className={`w-full group text-left flex items-center justify-between min-h-[56px] py-4 border-b border-[#D9C6F2] transition-colors duration-200 cursor-pointer select-none ${
-                            isOpen ? 'border-[#6A35A8]' : 'hover:border-[#6A35A8]'
-                          }`}
-                        >
-                          <div className="flex items-baseline gap-3.5 sm:gap-4 pr-3">
-                            {/* Italic Serif Numeral in purple-600 */}
-                            <span className="font-heading italic font-semibold text-lg sm:text-xl text-[#6A35A8] shrink-0 select-none">
-                              {formattedNumber}
-                            </span>
+                    {/* Service Name: Playfair Display ~1.2rem, weight 400 to 500, in dark plum */}
+                    <span
+                      className={`font-heading font-normal sm:font-medium text-[1.15rem] sm:text-[1.2rem] tracking-tight leading-tight transition-colors duration-200 truncate ${
+                        isOpen
+                          ? 'text-[#6A35A8]'
+                          : 'text-[#2B0F3F] group-hover:text-[#6A35A8]'
+                      }`}
+                    >
+                      {service.name}
+                    </span>
+                  </div>
 
-                            {/* Service Name in Playfair Display ~22px */}
-                            <span
-                              className={`font-heading font-semibold text-[20px] sm:text-[22px] tracking-tight leading-snug transition-colors duration-200 ${
-                                isOpen
-                                  ? 'text-[#6A35A8]'
-                                  : 'text-[#2B0F3F] group-hover:text-[#6A35A8]'
-                              }`}
-                            >
-                              {service.name}
-                            </span>
-                          </div>
+                  {/* + button: 36px circle with a hairline lavender border */}
+                  <div
+                    className={`w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 border transition-all duration-300 ${
+                      isOpen
+                        ? 'bg-[#6A35A8] text-white border-[#6A35A8] rotate-45'
+                        : 'border-[#D9C6F2] text-[#2B0F3F] group-hover:border-[#6A35A8] group-hover:text-[#6A35A8]'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2]" />
+                  </div>
+                </button>
 
-                          {/* + to × rotating icon indicator */}
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all duration-300 ${
-                              isOpen
-                                ? 'bg-[#6A35A8] text-white border-[#6A35A8] rotate-45'
-                                : 'border-[#D9C6F2] text-[#2B0F3F] group-hover:border-[#6A35A8] group-hover:text-[#6A35A8]'
-                            }`}
-                            aria-hidden="true"
-                          >
-                            <Plus className="w-4 h-4 stroke-[2.25]" />
-                          </div>
-                        </button>
-
-                        {/* Mobile Inline Expansion (Below row on mobile) */}
-                        {columnCount === 1 && isOpen && activeService && (
-                          <div className="py-6 animate-fade-in border-b border-[#D9C6F2]">
-                            <DetailsPanelContent
-                              service={activeService}
-                              onImageClick={(idx) =>
-                                openLightbox(
-                                  activeService.name,
-                                  getPhotosByServiceId(activeService.id),
-                                  idx
-                                )
-                              }
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Desktop & Tablet Full-Width Expanded Details Panel */}
-                {columnCount > 1 && isRowActive && activeService && (
-                  <div className="w-full my-6 p-6 sm:p-8 rounded-2xl bg-white border border-[#D9C6F2] shadow-xl shadow-[#2B0F3F]/5 animate-fade-in transition-all">
-                    <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#D9C6F2]/40">
-                      <div>
-                        <span className="font-body text-xs uppercase tracking-wider text-[#6A35A8] font-semibold">
-                          Selected Service
-                        </span>
-                        <h3 className="font-heading font-semibold text-2xl text-[#2B0F3F]">
-                          {activeService.name}
-                        </h3>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setOpenServiceId(null)}
-                        className="w-9 h-9 rounded-full bg-[#FBF8FE] border border-[#D9C6F2] text-[#2B0F3F] hover:bg-[#6A35A8] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                        aria-label="Close details"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
+                {/* Inline Details Panel directly below row */}
+                {isOpen && (
+                  <div className="pb-6 pt-2 animate-fade-in">
                     <DetailsPanelContent
-                      service={activeService}
+                      service={service}
                       onImageClick={(idx) =>
                         openLightbox(
-                          activeService.name,
-                          getPhotosByServiceId(activeService.id),
+                          service.name,
+                          getPhotosByServiceId(service.id),
                           idx
                         )
                       }
@@ -395,7 +306,7 @@ export const ServicesSection: React.FC = () => {
 };
 
 /**
- * Reusable details panel content for both Desktop (full-width) and Mobile (inline)
+ * Reusable details panel content
  */
 interface DetailsPanelContentProps {
   service: ServiceItem;
@@ -411,7 +322,6 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
 
   // Read photos from photos.ts by service id
   const allPhotos = getPhotosByServiceId(service.id);
-  // For kids service, optionally filter or show photos
   const photos = allPhotos;
   const hasRealPhotos = photos.length > 0;
 
@@ -438,7 +348,7 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-2">
       {/* Kids Hair: Two-Option Toggle (Girls / Boys) */}
       {isKidsService && (
         <div className="space-y-4 pb-2 border-b border-[#D9C6F2]/40">
@@ -479,7 +389,7 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
       )}
 
       {hasRealPhotos ? (
-        /* Real Photos Horizontal Strip: ONE horizontal row that scrolls sideways, never stacked vertically */
+        /* Real Photos Horizontal Strip: ONE horizontal row that scrolls sideways */
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="font-body text-xs uppercase tracking-wider text-[#2B0F3F]/60 font-medium">
@@ -487,7 +397,7 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
               {photos.length === 1 ? 'Photo' : 'Photos'} · Tap to Enlarge)
             </p>
 
-            {/* Desktop Small Square Prev/Next Arrow Buttons (thin white-on-plum, sharp corners) */}
+            {/* Desktop Small Square Prev/Next Arrow Buttons */}
             {photos.length > 1 && (
               <div className="hidden sm:flex items-center gap-1.5">
                 <button
@@ -527,7 +437,7 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
             ))}
           </div>
 
-          {/* Thin Progress Line below scroller on desktop & mobile */}
+          {/* Thin Progress Line below scroller */}
           {photos.length > 1 && (
             <div className="w-full h-[2px] bg-[#D9C6F2]/30 relative overflow-hidden mt-1">
               <div
@@ -541,9 +451,9 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
           )}
         </div>
       ) : (
-        /* If service has no photos yet: single glass card with "Photos coming soon" */
-        <div className="py-8 px-6 rounded-none glass-panel text-center max-w-md mx-auto my-1 border border-[#D9C6F2] flex flex-col items-center justify-center space-y-2">
-          <p className="font-heading font-semibold text-lg text-[#2B0F3F]">
+        /* If service has no photos yet: single card with "Photo coming soon" */
+        <div className="py-7 px-6 rounded-none glass-panel text-center max-w-md mx-auto my-1 border border-[#D9C6F2] flex flex-col items-center justify-center space-y-2">
+          <p className="font-heading font-semibold text-base text-[#2B0F3F]">
             Photo coming soon
           </p>
           <p className="font-body text-xs text-[#2B0F3F]/70">
@@ -556,7 +466,7 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
 
       {/* Action Block: Price info and minimal left-aligned Book button */}
       <div className="pt-3 border-t border-[#D9C6F2]/40 flex flex-col items-start gap-3">
-        <p className="font-body text-sm sm:text-base font-medium text-[#2B0F3F]/85">
+        <p className="font-body text-sm font-medium text-[#2B0F3F]/85">
           Price: ask us on WhatsApp
         </p>
 

@@ -1,16 +1,17 @@
 /**
- * Minimal, Centred, Luxurious Hero Section for Luxtress Hair Studio.
- * - Sized with padding (min-height: 100svh removed):
- *   Top padding: header height + 2.5rem (mobile), header height + 4rem (desktop)
- *   Bottom padding: 4rem (mobile), 5rem (desktop)
- * - Horizontal content alignment: perfectly centred.
- * - Entrance Animation on initial load (~2s total):
+ * Full-Screen Centred Hero Section for Luxtress Hair Studio.
+ * Inspired by Hair Creations:
+ * - Fills the whole screen (min-height: 100vh; min-height: 100svh).
+ * - Content block (name, divider, "Elegance Meets Confidence", and the two buttons)
+ *   is centred vertically and horizontally with generous space above and below.
+ * - Header stays transparent over the hero (offset with negative margin).
+ * - Full entrance animations preserved (~2s total):
  *   1) Words of "Luxtress Hair Studio" glide up 28px, blur 6px to 0, 800ms, cubic-bezier(0.22, 1, 0.36, 1),
  *      staggered 140ms apart, starting 150ms after load.
  *   2) Divider line grows outward from centre (scaleX 0 to 1, 500ms).
  *   3) Words of "Elegance Meets Confidence" glide up the same way, staggered 120ms apart.
  *   4) Two buttons fade up 24px, 500ms, 120ms apart.
- *   5) animation-fill-mode: both, no layout shift, respects prefers-reduced-motion.
+ *   5) Respects prefers-reduced-motion.
  */
 
 import React from 'react';
@@ -39,7 +40,8 @@ export const Hero: React.FC = () => {
   return (
     <section
       id="home"
-      className="relative -mt-[76px] sm:-mt-[84px] pt-[calc(76px+2.5rem)] sm:pt-[calc(84px+4rem)] pb-16 sm:pb-20 w-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#2B0F3F]"
+      style={{ minHeight: '100svh' }}
+      className="relative -mt-[76px] sm:-mt-[84px] min-h-screen min-h-[100svh] w-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8 py-20 sm:py-24 overflow-hidden bg-[#2B0F3F]"
       aria-label="Luxtress Hair Studio Hero"
     >
       {/* Background layer: Image (with 60% overlay) if HERO_IMAGE set, else deep plum gradient + soft lavender radial glow */}
@@ -75,8 +77,8 @@ export const Hero: React.FC = () => {
         aria-hidden="true"
       />
 
-      {/* Centred Hero Content with Entrance Animations */}
-      <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center justify-center">
+      {/* Centred Hero Content Block with Generous Space Above and Below */}
+      <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center justify-center my-auto">
         {/* H1: Luxtress Hair Studio (staggered word glide) */}
         <h1 className="font-heading font-bold text-white tracking-tight leading-[1.08] text-4xl sm:text-6xl md:text-7xl lg:text-8xl max-w-3xl sm:max-w-4xl text-balance">
           {headingWords.map((word, idx) => (
