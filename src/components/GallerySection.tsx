@@ -1,84 +1,202 @@
 /**
  * Gallery Section for Luxtress Hair Studio.
- * - Reads directly from the central `src/data/photos.ts` registry.
- * - Filter pills are generated automatically from the categories that actually have photos, plus "All".
- * - Responsive grid with lazy loading, soft plum-to-lavender skeletons, and error fallback.
- * - Lightbox viewing with previous/next and keyboard navigation.
- * - Synchronizes with FloatingWhatsApp so the floating icon hides during lightbox preview.
+ * - Single heading: "Our Work" (Playfair Display 600) with tight, consistent spacing.
+ * - 12 cards in 4 rows (Ladies, Men, Kids, Nails & Beauty) without row labels.
+ * - Desktop hover overlay: soft plum overlay with small enlarge icon (no category text).
+ * - Aspect ratio 4:5, sharp square corners (rounded-none), thin lavender hairline border.
+ * - Photos fill frame with object-fit: cover (no letterboxing).
+ * - Placeholder card with soft plum-to-lavender tint, subtle icon, and "Photo coming soon".
+ * - Video card support with play icon.
+ * - Respects prefers-reduced-motion.
+ * - Mobile horizontal swipe strip with scroll-snap.
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { Sparkles, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import {
-  PHOTOS,
-  SalonPhoto,
-  PhotoCategory,
-  getAvailableCategories,
-  CATEGORY_LABELS,
-} from '../data/photos';
-import { PhotoThumbnail } from './PhotoThumbnail';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Camera, X, Maximize2 } from 'lucide-react';
 import { notifyLightboxChange } from '../utils/lightboxEvents';
 
-export const GallerySection: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<PhotoCategory | 'All'>('All');
-  const [lightboxState, setLightboxState] = useState<{
-    isOpen: boolean;
-    currentIndex: number;
-    photos: SalonPhoto[];
-  }>({
-    isOpen: false,
-    currentIndex: 0,
-    photos: [],
-  });
+export type GalleryCategory = 'Ladies' | 'Men' | 'Kids' | 'Nails & Beauty';
 
-  // Dynamically compute categories that actually have registered photos
-  const availableCategories = useMemo(() => {
-    return getAvailableCategories();
+export interface GalleryCardItem {
+  id: string;
+  category: GalleryCategory;
+  src: string; // If empty, placeholder card is shown automatically
+  alt: string;
+  type: 'image' | 'video';
+  scaleOverride?: boolean; // For fade.jpg to crop circular frame cleanly
+}
+
+/**
+ * MASTER GALLERY CARDS (12 in total, 3 per row on desktop).
+ * To add or replace photos: just paste the image path in 'src'.
+ * Leaving 'src' empty automatically displays the elegant placeholder card.
+ */
+export const GALLERY_CARDS: GalleryCardItem[] = [
+  // ROW 1: LADIES
+  {
+    id: 'ladies-1',
+    category: 'Ladies',
+    src: '/images/work/boho-braids.jpg',
+    alt: 'Knotless braids with curly ends',
+    type: 'image',
+  },
+  {
+    id: 'ladies-2',
+    category: 'Ladies',
+    src: '/images/work/twists.jpg',
+    alt: 'Twist hairstyle',
+    type: 'image',
+  },
+  {
+    id: 'ladies-3',
+    category: 'Ladies',
+    src: '',
+    alt: 'Protective braids and styling',
+    type: 'image',
+  },
+
+  // ROW 2: MEN
+  {
+    id: 'men-1',
+    category: 'Men',
+    src: '/images/work/fade.jpg',
+    alt: 'Fade haircut with a razor design',
+    type: 'image',
+    scaleOverride: true,
+  },
+  {
+    id: 'men-2',
+    category: 'Men',
+    src: '',
+    alt: 'Precision fade and razor shape-up',
+    type: 'image',
+  },
+  {
+    id: 'men-3',
+    category: 'Men',
+    src: '',
+    alt: 'Beard sculpting and haircut showcase',
+    type: 'video',
+  },
+
+  // ROW 3: KIDS
+  {
+    id: 'kids-1',
+    category: 'Kids',
+    src: '',
+    alt: 'Gentle detangling and braids for girls',
+    type: 'image',
+  },
+  {
+    id: 'kids-2',
+    category: 'Kids',
+    src: '',
+    alt: 'Clean taper and fade for boys',
+    type: 'image',
+  },
+  {
+    id: 'kids-3',
+    category: 'Kids',
+    src: '',
+    alt: 'Kids patient styling session',
+    type: 'video',
+  },
+
+  // ROW 4: NAILS & BEAUTY
+  {
+    id: 'nails-1',
+    category: 'Nails & Beauty',
+    src: '/images/work/nails.jpg',
+    alt: 'Nail art with marbled tips',
+    type: 'image',
+  },
+  {
+    id: 'nails-2',
+    category: 'Nails & Beauty',
+    src: '',
+    alt: 'Deluxe manicure & gel polish set',
+    type: 'image',
+  },
+  {
+    id: 'nails-3',
+    category: 'Nails & Beauty',
+    src: '',
+    alt: 'Glamour makeover and eye beautification',
+    type: 'image',
+  },
+];
+
+const ROWS: { category: GalleryCategory }[] = [
+  { category: 'Ladies' },
+  { category: 'Men' },
+  { category: 'Kids' },
+  { category: 'Nails & Beauty' },
+];
+
+export const GallerySection: React.FC = () => {
+  const [lightboxCard, setLightboxCard] = useState<GalleryCardItem | null>(null);
+  const [visibleCardIds, setVisibleCardIds] = useState<Set<string>>(new Set());
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      setPrefersReducedMotion(mediaQuery.matches);
+      const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
+    }
   }, []);
 
-  // Filter photos based on selection
-  const filteredPhotos = useMemo(() => {
-    if (selectedCategory === 'All') {
-      return PHOTOS;
+  // IntersectionObserver for one-time glide in animations
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setVisibleCardIds(new Set(GALLERY_CARDS.map((c) => c.id)));
+      return;
     }
-    return PHOTOS.filter((p) => p.category === selectedCategory);
-  }, [selectedCategory]);
 
-  const openLightbox = (index: number) => {
-    setLightboxState({
-      isOpen: true,
-      currentIndex: index,
-      photos: filteredPhotos,
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('data-card-id');
+            if (id) {
+              setVisibleCardIds((prev) => new Set([...prev, id]));
+              observer.unobserve(entry.target);
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: '0px 0px -40px 0px',
+      }
+    );
+
+    Object.values(cardRefs.current).forEach((node) => {
+      if (node) observer.observe(node);
     });
+
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
+
+  // Lightbox handlers & synchronization
+  const openLightbox = (card: GalleryCardItem) => {
+    if (!card.src) return;
+    setLightboxCard(card);
   };
 
   const closeLightbox = () => {
-    setLightboxState((prev) => ({ ...prev, isOpen: false }));
+    setLightboxCard(null);
   };
 
-  const nextImage = () => {
-    setLightboxState((prev) => ({
-      ...prev,
-      currentIndex: (prev.currentIndex + 1) % prev.photos.length,
-    }));
-  };
-
-  const prevImage = () => {
-    setLightboxState((prev) => ({
-      ...prev,
-      currentIndex: (prev.currentIndex - 1 + prev.photos.length) % prev.photos.length,
-    }));
-  };
-
-  // Synchronize lightbox open state with global event (hides Floating WhatsApp)
   useEffect(() => {
-    notifyLightboxChange(lightboxState.isOpen);
-    if (!lightboxState.isOpen) return;
+    notifyLightboxChange(!!lightboxCard);
+    if (!lightboxCard) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowRight') nextImage();
-      if (e.key === 'ArrowLeft') prevImage();
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -86,168 +204,175 @@ export const GallerySection: React.FC = () => {
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
     };
-  }, [lightboxState.isOpen, lightboxState.photos.length]);
-
-  const currentPhoto = lightboxState.photos[lightboxState.currentIndex];
+  }, [lightboxCard]);
 
   return (
     <section
       id="gallery"
-      className="scroll-mt-24 py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 bg-white text-[#2B0F3F] border-b border-[#D9C6F2]/30"
-      aria-label="Luxtress Studio Gallery"
+      className="scroll-mt-20 py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white text-[#2B0F3F] border-b border-[#D9C6F2]/30"
+      aria-label="Luxtress Gallery"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Header Lockup */}
-        <div className="max-w-3xl mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 text-xs font-body tracking-[0.2em] uppercase font-semibold text-[#6A35A8] mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-[#6A35A8]" />
-            <span>GALLERY</span>
-          </div>
-
-          <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight mb-3">
-            Studio Artistry & Transformations
+        {/* Section Header: Single Heading "Our Work" with tight spacing */}
+        <div className="mb-8 sm:mb-10">
+          <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight">
+            Our Work
           </h2>
-
-          <p className="font-body text-base sm:text-lg text-[#2B0F3F]/85 leading-relaxed">
-            Real styling from our chairs in Kenya. Tap any photo to view full-screen.
-          </p>
         </div>
 
-        {/* Dynamic Category Filter Pills (Generated from categories that have photos + "All") */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-10">
-          <button
-            type="button"
-            onClick={() => setSelectedCategory('All')}
-            className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium font-body transition-all duration-200 cursor-pointer min-h-[38px] ${
-              selectedCategory === 'All'
-                ? 'bg-[#6A35A8] text-white shadow-md'
-                : 'border border-[#D9C6F2] text-[#2B0F3F] hover:border-[#6A35A8] hover:text-[#6A35A8] bg-transparent'
-            }`}
-          >
-            All ({PHOTOS.length})
-          </button>
+        {/* 4 Rows (Ladies, Men, Kids, Nails & Beauty) without row labels */}
+        <div className="space-y-4 sm:space-y-6">
+          {ROWS.map((row) => {
+            const cardsInRow = GALLERY_CARDS.filter((c) => c.category === row.category);
 
-          {availableCategories.map((cat) => {
-            const count = PHOTOS.filter((p) => p.category === cat).length;
-            const isSelected = selectedCategory === cat;
             return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium font-body transition-all duration-200 cursor-pointer min-h-[38px] ${
-                  isSelected
-                    ? 'bg-[#6A35A8] text-white shadow-md'
-                    : 'border border-[#D9C6F2] text-[#2B0F3F] hover:border-[#6A35A8] hover:text-[#6A35A8] bg-transparent'
-                }`}
-              >
-                {CATEGORY_LABELS[cat] || cat} ({count})
-              </button>
+              <div key={row.category}>
+                {/* Cards Container: Desktop 3-column grid, Mobile horizontal swipe strip with scroll-snap */}
+                <div className="flex sm:grid sm:grid-cols-3 gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory pb-3 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+                  {cardsInRow.map((card, colIdx) => {
+                    const isVisible = visibleCardIds.has(card.id) || prefersReducedMotion;
+                    const isMiddle = colIdx === 1;
+
+                    // Glide direction: Left & right glide up from below; middle glides down from above
+                    let initialTranslate = '';
+                    if (!isVisible && !prefersReducedMotion) {
+                      initialTranslate = isMiddle ? '-translate-y-8' : 'translate-y-8';
+                    }
+
+                    // 100ms stagger between cards in a row
+                    const delayClass =
+                      colIdx === 0
+                        ? 'delay-0'
+                        : colIdx === 1
+                          ? 'delay-100'
+                          : 'delay-200';
+
+                    return (
+                      <div
+                        key={card.id}
+                        ref={(el) => {
+                          cardRefs.current[card.id] = el;
+                        }}
+                        data-card-id={card.id}
+                        onClick={() => openLightbox(card)}
+                        className={`w-[76vw] sm:w-auto shrink-0 snap-start relative aspect-[4/5] rounded-none border border-[#D9C6F2] overflow-hidden transition-all duration-600 ease-out ${delayClass} ${
+                          isVisible
+                            ? 'opacity-100 translate-y-0'
+                            : `opacity-0 ${initialTranslate}`
+                        } ${card.src ? 'cursor-pointer group' : 'cursor-default'}`}
+                        role={card.src ? 'button' : undefined}
+                        tabIndex={card.src ? 0 : undefined}
+                        aria-label={card.src ? `View ${card.alt}` : `${card.category} photo coming soon`}
+                        onKeyDown={(e) => {
+                          if (card.src && (e.key === 'Enter' || e.key === ' ')) {
+                            e.preventDefault();
+                            openLightbox(card);
+                          }
+                        }}
+                      >
+                        {card.src ? (
+                          /* Photo Card (object-fit: cover, no letterboxing) */
+                          <div className="relative w-full h-full bg-black">
+                            <img
+                              src={card.src}
+                              alt={card.alt}
+                              loading="lazy"
+                              decoding="async"
+                              className={`w-full h-full object-cover object-center transition-transform duration-500 ease-out ${
+                                card.scaleOverride
+                                  ? 'scale-[1.4] group-hover:scale-[1.45]'
+                                  : 'scale-100 group-hover:scale-105'
+                              }`}
+                            />
+
+                            {/* Video Play Icon Badge if type is video */}
+                            {card.type === 'video' && (
+                              <div className="absolute top-3 right-3 w-9 h-9 rounded-none bg-[#2B0F3F]/80 border border-[#D9C6F2]/40 text-white flex items-center justify-center backdrop-blur-sm z-10 shadow-md">
+                                <Play className="w-4 h-4 fill-white ml-0.5" />
+                              </div>
+                            )}
+
+                            {/* Hover Overlay on Desktop: soft plum overlay with small enlarge icon */}
+                            <div className="hidden sm:flex absolute inset-0 bg-[#2B0F3F]/70 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center p-4 z-10">
+                              <div className="w-10 h-10 rounded-full border border-[#D9C6F2]/60 bg-[#2B0F3F]/60 flex items-center justify-center text-white shadow-md transform group-hover:scale-105 transition-transform duration-200">
+                                <Maximize2 className="w-4 h-4 text-[#D9C6F2]" />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Placeholder Card: soft plum-to-lavender tint, subtle icon, and "Photo coming soon" */
+                          <div className="w-full h-full bg-gradient-to-br from-[#2B0F3F]/5 via-[#6A35A8]/5 to-[#D9C6F2]/20 flex flex-col items-center justify-center p-6 text-center space-y-3">
+                            <div className="w-12 h-12 rounded-none border border-[#D9C6F2] bg-white flex items-center justify-center text-[#6A35A8] shadow-xs">
+                              {card.type === 'video' ? (
+                                <Play className="w-5 h-5 fill-[#6A35A8]/20" />
+                              ) : (
+                                <Camera className="w-5 h-5" />
+                              )}
+                            </div>
+
+                            <div className="space-y-1">
+                              <p className="font-heading font-semibold text-base text-[#2B0F3F]">
+                                Photo coming soon
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
         </div>
-
-        {/* Photos Grid */}
-        {filteredPhotos.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-            {filteredPhotos.map((photo, index) => (
-              <div key={photo.id} className="w-full">
-                <PhotoThumbnail
-                  photo={photo}
-                  onClick={() => openLightbox(index)}
-                  aspectRatioClass="aspect-[4/5]"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-12 px-6 rounded-2xl glass-panel text-center max-w-md mx-auto my-4 border border-[#D9C6F2]/30">
-            <p className="font-heading font-semibold text-lg text-[#2B0F3F]">
-              Photos coming soon
-            </p>
-            <p className="font-body text-xs text-[#2B0F3F]/70 mt-1">
-              New client photos in this category will be added soon.
-            </p>
-          </div>
-        )}
       </div>
 
-      {/* Full-Screen Gallery Lightbox */}
-      {lightboxState.isOpen && currentPhoto && (
+      {/* Lightbox Modal with sharp corners */}
+      {lightboxCard && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Photo preview: ${currentPhoto.alt}`}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-[#2B0F3F]/90 backdrop-blur-xl animate-fade-in"
+          aria-label={`Photo preview: ${lightboxCard.alt}`}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-[#2B0F3F]/95 backdrop-blur-xl animate-fade-in select-none"
         >
-          {/* Top Bar with Title, Counter and Close Button */}
+          {/* Top Bar with Title and Close Button */}
           <div className="absolute top-4 left-4 right-4 sm:top-6 sm:left-8 sm:right-8 flex items-center justify-between z-20">
             <div className="text-left">
               <span className="font-body text-xs tracking-wider uppercase text-[#D9C6F2]">
-                Luxtress Studio Gallery
+                {lightboxCard.category}
               </span>
               <p className="font-heading text-white text-base sm:text-lg font-semibold line-clamp-1">
-                {currentPhoto.alt}
+                {lightboxCard.alt}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-[#D9C6F2] font-mono hidden sm:inline-block">
-                {lightboxState.currentIndex + 1} / {lightboxState.photos.length}
-              </span>
-
-              <button
-                type="button"
-                onClick={closeLightbox}
-                className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-white hover:bg-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-[#D9C6F2]"
-                aria-label="Close photo preview"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-
-          {/* Previous Button */}
-          {lightboxState.photos.length > 1 && (
             <button
               type="button"
-              onClick={prevImage}
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass-button flex items-center justify-center text-white hover:bg-white/25 transition-all focus:outline-none focus:ring-2 focus:ring-[#D9C6F2]"
-              aria-label="Previous photo"
+              onClick={closeLightbox}
+              className="w-10 h-10 rounded-none bg-[#2B0F3F] border border-[#D9C6F2] text-white flex items-center justify-center hover:bg-[#6A35A8] transition-colors focus:outline-none focus:ring-2 focus:ring-[#D9C6F2] cursor-pointer"
+              aria-label="Close photo preview"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
-          )}
+          </div>
 
-          {/* Central Image View */}
-          <div className="relative max-w-2xl max-h-[75vh] flex items-center justify-center p-2 rounded-3xl glass-panel shadow-2xl border border-[#D9C6F2]/30 bg-[#2B0F3F]/80">
+          {/* Central Image View with sharp corners, 4:5 aspect ratio */}
+          <div className="relative max-w-md w-full aspect-[4/5] rounded-none border border-[#D9C6F2] bg-black overflow-hidden shadow-2xl flex items-center justify-center">
             <img
-              src={currentPhoto.src}
-              alt={currentPhoto.alt}
-              className={`max-h-[70vh] w-auto object-contain ${
-                currentPhoto.isCircular ? 'rounded-full aspect-square' : 'rounded-2xl'
-              } shadow-2xl`}
+              src={lightboxCard.src}
+              alt={lightboxCard.alt}
+              className={`w-full h-full object-cover object-center ${
+                lightboxCard.scaleOverride ? 'scale-[1.4]' : 'scale-100'
+              }`}
             />
           </div>
 
-          {/* Next Button */}
-          {lightboxState.photos.length > 1 && (
-            <button
-              type="button"
-              onClick={nextImage}
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full glass-button flex items-center justify-center text-white hover:bg-white/25 transition-all focus:outline-none focus:ring-2 focus:ring-[#D9C6F2]"
-              aria-label="Next photo"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          )}
-
           {/* Bottom Caption Bar */}
-          <div className="absolute bottom-4 sm:bottom-6 inset-x-4 max-w-lg mx-auto text-center z-20">
-            <p className="font-body text-xs sm:text-sm text-[#D9C6F2] font-medium bg-[#2B0F3F]/80 backdrop-blur-md px-4 py-2 rounded-full border border-[#D9C6F2]/20 inline-block shadow-lg">
-              {currentPhoto.alt}
+          <div className="absolute bottom-4 sm:bottom-6 inset-x-4 max-w-md mx-auto text-center z-20">
+            <p className="font-body text-xs sm:text-sm text-[#D9C6F2] font-medium bg-[#2B0F3F]/90 px-4 py-2 border border-[#D9C6F2]/30 inline-block shadow-lg">
+              {lightboxCard.alt}
             </p>
           </div>
         </div>

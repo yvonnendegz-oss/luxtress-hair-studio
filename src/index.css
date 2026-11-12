@@ -175,6 +175,61 @@
   color: var(--lavender-200);
 }
 
+/* Hero Entrance Animations */
+@keyframes heroWordGlide {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes heroDividerGrow {
+  0% {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  100% {
+    opacity: 0.85;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes heroButtonFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-word-anim {
+  opacity: 0;
+  animation: heroWordGlide 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity, filter;
+}
+
+.hero-divider-anim {
+  opacity: 0;
+  transform: scaleX(0);
+  animation: heroDividerGrow 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+.hero-button-anim {
+  opacity: 0;
+  animation: heroButtonFadeUp 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
 /* Respect prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
@@ -188,7 +243,13 @@
     overflow-x: auto;
   }
   .animate-glow-1,
-  .animate-glow-2 {
+  .animate-glow-2,
+  .hero-word-anim,
+  .hero-divider-anim,
+  .hero-button-anim {
     animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

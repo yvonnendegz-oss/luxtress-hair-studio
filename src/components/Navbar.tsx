@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { SALON_CONFIG } from '../config/salon';
+import { SALON_CONFIG, SOCIAL_LINKS } from '../config/salon';
 import { Logo } from './Logo';
 import {
   InstagramOutlineIcon,
@@ -78,7 +78,7 @@ export const Navbar: React.FC = () => {
 
     const target = document.querySelector(href);
     if (target) {
-      const topOffset = 80;
+      const topOffset = 88; // header height + 16px
       const elementPosition = target.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - topOffset;
 
@@ -91,24 +91,24 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* Sticky Header Container */}
+      {/* Sticky Header Container: transparent over hero, solid plum on scroll */}
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           scrolled
-            ? 'bg-[#2B0F3F]/85 backdrop-blur-xl border-b border-[#D9C6F2]/20 shadow-xl py-3'
-            : 'bg-[#2B0F3F]/40 backdrop-blur-md border-b border-white/10 py-4 sm:py-5'
+            ? 'bg-[#2B0F3F]/95 backdrop-blur-md border-b border-[#D9C6F2]/20 shadow-md py-3'
+            : 'bg-transparent border-b border-transparent py-4 sm:py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-8">
-            {/* Zone 1: Brand Wordmark & SVG Medallion */}
+            {/* Zone 1: Circular Logo Icon only (no wordmark) */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, '#home', 'home')}
-              className="flex items-center gap-3 shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D9C6F2] rounded-lg"
+              className="flex items-center shrink-0 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D9C6F2] rounded-full"
               aria-label="Luxtress Hair Studio Home"
             >
-              <Logo size="md" />
+              <Logo size="md" showWordmark={false} />
             </a>
 
             {/* Desktop Navigation Links aligned to the right (no button) */}
@@ -164,7 +164,7 @@ export const Navbar: React.FC = () => {
         >
           {/* Mobile Overlay Header */}
           <div className="p-4 sm:p-6 flex items-center justify-between border-b border-[#D9C6F2]/20">
-            <Logo size="sm" />
+            <Logo size="sm" showWordmark={false} />
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
@@ -206,33 +206,33 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Overlay Footer with Social Icons & Hours */}
           <div className="p-6 border-t border-[#D9C6F2]/20 bg-black/25 space-y-4">
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center justify-center gap-6">
               <a
-                href={SALON_CONFIG.contact.instagramUrl}
+                href={SOCIAL_LINKS.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Luxtress Instagram"
-                className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-[#D9C6F2] hover:text-white"
+                className="text-[#D9C6F2] hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
               >
-                <InstagramOutlineIcon className="w-5 h-5" />
+                <InstagramOutlineIcon className="w-6 h-6" />
               </a>
               <a
-                href={SALON_CONFIG.contact.tiktokUrl}
+                href={SOCIAL_LINKS.tiktok}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Luxtress TikTok"
-                className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-[#D9C6F2] hover:text-white"
+                className="text-[#D9C6F2] hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
               >
-                <TikTokOutlineIcon className="w-5 h-5" />
+                <TikTokOutlineIcon className="w-6 h-6" />
               </a>
               <a
-                href={SALON_CONFIG.contact.facebookUrl}
+                href={SOCIAL_LINKS.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Luxtress Facebook"
-                className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-[#D9C6F2] hover:text-white"
+                className="text-[#D9C6F2] hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
               >
-                <FacebookOutlineIcon className="w-5 h-5" />
+                <FacebookOutlineIcon className="w-6 h-6" />
               </a>
             </div>
 

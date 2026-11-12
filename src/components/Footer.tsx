@@ -1,19 +1,17 @@
 /**
- * Rebuilt Footer Component for Luxtress Hair Studio.
- * - Deep plum-900 background, generous padding (96px top on desktop).
- * - 4-column layout on desktop, stacked on mobile:
- *   Col 1: Logo & Tagline "Elegance Meets Confidence"
- *   Col 2 "Visit us": "Acre Tano, inside Rubis Petrol Station" + "Get directions" link
- *   Col 3 "Hours": "Open daily, 8:00 AM - 8:00 PM"
- *   Col 4 "Follow us": 3 thin-outline social icons (Instagram, TikTok, Facebook) + "Book on WhatsApp" button
- * - Bottom bar: thin lavender divider + "© 2026 Luxtress Hair Studio. All rights reserved."
- * - Subtle staggered fade-up reveal on columns.
+ * Footer Component for Luxtress Hair Studio.
+ * - Deep plum-900 background, generous padding.
+ * - Starts directly at "VISIT US" (brand block removed).
+ * - 3 Columns on desktop, stacked on mobile:
+ *   Col 1: "VISIT US" (address & phone)
+ *   Col 2: "HOURS" ("Open daily, 8:00 AM - 8:00 PM")
+ *   Col 3: "FOLLOW US" (Instagram, TikTok, Facebook thin-line icons)
+ * - Bottom bar: thin lavender divider + copyright + "Back to top" button.
  */
 
 import React from 'react';
 import { MapPin, Clock, ArrowUp } from 'lucide-react';
-import { SALON_CONFIG } from '../config/salon';
-import { Logo } from './Logo';
+import { SALON_CONFIG, SOCIAL_LINKS } from '../config/salon';
 import {
   InstagramOutlineIcon,
   TikTokOutlineIcon,
@@ -31,26 +29,26 @@ export const Footer: React.FC = () => {
   const socialLinks = [
     {
       name: 'Instagram',
-      url: SALON_CONFIG.contact.instagramUrl,
+      url: SOCIAL_LINKS.instagram,
       icon: InstagramOutlineIcon,
       ariaLabel: 'Follow Luxtress Hair Studio on Instagram',
     },
     {
       name: 'TikTok',
-      url: SALON_CONFIG.contact.tiktokUrl,
+      url: SOCIAL_LINKS.tiktok,
       icon: TikTokOutlineIcon,
       ariaLabel: 'Follow Luxtress Hair Studio on TikTok',
     },
     {
       name: 'Facebook',
-      url: SALON_CONFIG.contact.facebookUrl,
+      url: SOCIAL_LINKS.facebook,
       icon: FacebookOutlineIcon,
       ariaLabel: 'Follow Luxtress Hair Studio on Facebook',
     },
   ];
 
   return (
-    <footer className="bg-[#2B0F3F] text-white border-t border-[#D9C6F2]/20 pt-24 pb-32 sm:pb-32 relative overflow-hidden">
+    <footer className="bg-[#2B0F3F] text-white border-t border-[#D9C6F2]/20 pt-16 sm:pt-20 pb-32 sm:pb-32 relative overflow-hidden">
       {/* Subtle ambient lavender glow in footer */}
       <div
         className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-[#6A35A8]/20 blur-[100px] pointer-events-none -z-10"
@@ -58,20 +56,9 @@ export const Footer: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 4-Column Grid on Desktop, Stacked on Mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-14 pb-16">
-          {/* Column 1: Logo & Tagline */}
-          <div className="space-y-4">
-            <Logo size="md" />
-            <p className="font-heading font-semibold text-lg sm:text-xl text-[#D9C6F2] italic tracking-wide">
-              &ldquo;{SALON_CONFIG.brand.tagline}&rdquo;
-            </p>
-            <p className="font-body text-sm text-[#D9C6F2]/80 leading-relaxed max-w-xs">
-              {SALON_CONFIG.brand.subtext}
-            </p>
-          </div>
-
-          {/* Column 2: Visit Us & Phone */}
+        {/* 3-Column Grid on Desktop (starts at VISIT US), Stacked on Mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14 pb-16">
+          {/* Column 1: Visit Us */}
           <div className="space-y-3.5">
             <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
               Visit Us
@@ -80,6 +67,11 @@ export const Footer: React.FC = () => {
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#D9C6F2] shrink-0 mt-1" />
                 <p className="leading-relaxed">{SALON_CONFIG.contact.address}</p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-[#D9C6F2] shrink-0" />
+                <span>Open daily · 8:00 AM – 8:00 PM</span>
               </div>
 
               <div className="pt-1">
@@ -93,7 +85,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 3: Hours */}
+          {/* Column 2: Hours */}
           <div className="space-y-3.5">
             <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
               Hours
@@ -101,22 +93,22 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 font-body text-sm text-white/90">
               <div className="flex items-center gap-2.5">
                 <Clock className="w-4 h-4 text-[#D9C6F2] shrink-0" />
-                <span>{SALON_CONFIG.contact.hours}</span>
+                <span>Open daily · 8:00 AM – 8:00 PM</span>
               </div>
               <p className="text-xs text-[#D9C6F2]/70 pt-1 leading-relaxed">
-                Walk-ins always welcome.
+                Walk-ins are welcome.
               </p>
             </div>
           </div>
 
-          {/* Column 4: Follow Us */}
+          {/* Column 3: Follow Us */}
           <div className="space-y-4">
             <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
               Follow Us
             </h3>
 
-            {/* Social Icons (Instagram, TikTok, Facebook) with 1.5px outline & 44px tap target */}
-            <div className="flex items-center gap-3">
+            {/* Social Icons (Instagram, TikTok, Facebook) with thin line style */}
+            <div className="flex items-center gap-2.5">
               {socialLinks.map((social) => {
                 const IconComponent = social.icon;
                 return (
@@ -126,7 +118,7 @@ export const Footer: React.FC = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.ariaLabel}
-                    className="w-11 h-11 rounded-full glass-button flex items-center justify-center text-[#D9C6F2] hover:text-white hover:bg-white/15 transition-all focus:outline-none focus:ring-2 focus:ring-[#D9C6F2]"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-[#D9C6F2] hover:text-white hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-[#D9C6F2]"
                   >
                     <IconComponent className="w-5 h-5" />
                   </a>

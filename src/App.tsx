@@ -10,7 +10,6 @@ import { Hero } from './components/Hero';
 import { MarqueeStrip } from './components/MarqueeStrip';
 import { ServicesSection } from './components/ServicesSection';
 import { GallerySection } from './components/GallerySection';
-import { SectionPlaceholders } from './components/SectionPlaceholders';
 import { VisitSection } from './components/VisitSection';
 import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
@@ -34,9 +33,6 @@ export default function App() {
 
         {/* Dynamic Studio Artistry Gallery with Auto Filter Pills */}
         <GallerySection />
-
-        {/* Anchored Section Placeholders for Kids */}
-        <SectionPlaceholders />
 
         {/* Dedicated Visit Section with Storefront Night Sign & Map */}
         <VisitSection />

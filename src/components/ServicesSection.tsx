@@ -13,15 +13,12 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { SALON_CONFIG, Audience, ServiceItem } from '../config/salon';
+import { SALON_CONFIG, ServiceItem } from '../config/salon';
 import { getPhotosByServiceId, SalonPhoto } from '../data/photos';
 import { PhotoThumbnail } from './PhotoThumbnail';
 import { notifyLightboxChange } from '../utils/lightboxEvents';
 
-type FilterType = 'All' | Audience;
-
 export const ServicesSection: React.FC = () => {
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('All');
   const [openServiceId, setOpenServiceId] = useState<string | null>(null);
   const [columnCount, setColumnCount] = useState<number>(3);
 
@@ -57,25 +54,7 @@ export const ServicesSection: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Filtered services list with sequential reflowing numbers
-  const filteredServices = useMemo(() => {
-    if (selectedFilter === 'All') {
-      return SALON_CONFIG.services;
-    }
-    return SALON_CONFIG.services.filter((svc) =>
-      svc.audiences.includes(selectedFilter)
-    );
-  }, [selectedFilter]);
-
-  // When filter changes, if open service is no longer in the list, close it
-  useEffect(() => {
-    if (openServiceId) {
-      const exists = filteredServices.some((s) => s.id === openServiceId);
-      if (!exists) {
-        setOpenServiceId(null);
-      }
-    }
-  }, [filteredServices, openServiceId]);
+  const filteredServices = SALON_CONFIG.services;
 
   // Toggle service details accordion
   const handleToggleService = (serviceId: string) => {
@@ -161,49 +140,15 @@ export const ServicesSection: React.FC = () => {
   return (
     <section
       id="services"
-      className="scroll-mt-20 bg-[#FBF8FE] text-[#2B0F3F] py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 border-b border-[#D9C6F2]/30"
+      className="scroll-mt-20 bg-[#FBF8FE] text-[#2B0F3F] py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-[#D9C6F2]/30"
       aria-label="Luxtress Hair Studio Services"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="max-w-3xl mb-10 sm:mb-14">
-          <span className="font-body text-xs sm:text-[13px] tracking-[0.2em] uppercase font-semibold text-[#6A35A8] block mb-3">
-            SERVICES
-          </span>
-
-          <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight mb-3">
+        {/* Section Header: Our Services */}
+        <div className="max-w-3xl mb-8 sm:mb-10">
+          <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight">
             Our Services
           </h2>
-
-          <p className="font-body text-base sm:text-lg text-[#2B0F3F]/85 leading-relaxed">
-            Tap any service to see our work.
-          </p>
-
-          {/* Filter Pills */}
-          <div
-            className="flex flex-wrap items-center gap-2 sm:gap-3 mt-7"
-            role="tablist"
-            aria-label="Audience filter"
-          >
-            {(['All', 'Women', 'Men', 'Kids'] as FilterType[]).map((pill) => {
-              const isActive = selectedFilter === pill;
-              return (
-                <button
-                  key={pill}
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setSelectedFilter(pill)}
-                  className={`px-5 py-2 rounded-full font-body text-sm font-medium transition-all duration-200 cursor-pointer min-h-[44px] flex items-center justify-center ${
-                    isActive
-                      ? 'bg-[#6A35A8] text-white shadow-md shadow-[#6A35A8]/20 ring-2 ring-[#6A35A8] ring-offset-2 ring-offset-[#FBF8FE]'
-                      : 'border border-[#D9C6F2] bg-white text-[#2B0F3F] hover:border-[#6A35A8] hover:text-[#6A35A8] active:scale-95'
-                  }`}
-                >
-                  {pill}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Numbered Services Grid with Responsive Full-Width Expansion */}
@@ -235,10 +180,11 @@ export const ServicesSection: React.FC = () => {
                     return (
                       <div
                         key={service.id}
+                        id={service.id === 'kids-hair' ? 'kids' : undefined}
                         ref={(el) => {
                           rowRefs.current[service.id] = el;
                         }}
-                        className="flex flex-col"
+                        className={`flex flex-col ${service.id === 'kids-hair' ? 'scroll-mt-24' : ''}`}
                       >
                         {/* Service Item Row Trigger */}
                         <button
@@ -377,39 +323,26 @@ export const ServicesSection: React.FC = () => {
               <button
                 type="button"
                 onClick={prevLightboxImage}
-                className="absolute left-0 sm:left-2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+                className="absolute left-0 sm:left-2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-none bg-[#2B0F3F] hover:bg-[#6A35A8] border border-[#D9C6F2] text-white flex items-center justify-center active:scale-95 transition-all cursor-pointer"
                 aria-label="Previous photo"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-5 h-5" />
               </button>
             )}
 
-            {/* Main Stage Image */}
+            {/* Main Stage Image: 4:5 portrait rectangle, sharp square corners, 1px lavender-200 border */}
             {lightboxState.images[lightboxState.currentIndex] && (
-              <div className="flex flex-col items-center">
-                {lightboxState.images[lightboxState.currentIndex].isCircular ? (
-                  <div className="w-72 h-72 sm:w-96 sm:h-96 rounded-full overflow-hidden border-2 border-[#D9C6F2]/80 shadow-2xl bg-transparent flex items-center justify-center">
-                    <img
-                      src={lightboxState.images[lightboxState.currentIndex].src}
-                      alt={lightboxState.images[lightboxState.currentIndex].alt}
-                      className="w-full h-full object-cover scale-[1.08]"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full max-w-lg aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl border border-[#D9C6F2]/40 bg-[#2B0F3F]">
-                    <img
-                      src={lightboxState.images[lightboxState.currentIndex].src}
-                      alt={lightboxState.images[lightboxState.currentIndex].alt}
-                      className={`w-full h-full object-cover ${
-                        lightboxState.images[lightboxState.currentIndex].objectPosition ||
-                        'object-center'
-                      }`}
-                    />
-                  </div>
-                )}
-                <p className="font-body text-xs sm:text-sm text-[#D9C6F2] text-center mt-3 tracking-wide">
-                  {lightboxState.images[lightboxState.currentIndex].alt}
-                </p>
+              <div className="relative max-w-sm sm:max-w-md w-full aspect-[4/5] rounded-none border border-[#D9C6F2] bg-black overflow-hidden shadow-2xl flex items-center justify-center">
+                <img
+                  src={lightboxState.images[lightboxState.currentIndex].src}
+                  alt={lightboxState.images[lightboxState.currentIndex].alt}
+                  className={`w-full h-full object-cover object-center ${
+                    lightboxState.images[lightboxState.currentIndex].isCircular ||
+                    lightboxState.images[lightboxState.currentIndex].id === 'fade'
+                      ? 'scale-[1.4]'
+                      : 'scale-100'
+                  }`}
+                />
               </div>
             )}
 
@@ -418,10 +351,10 @@ export const ServicesSection: React.FC = () => {
               <button
                 type="button"
                 onClick={nextLightboxImage}
-                className="absolute right-0 sm:right-2 z-10 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center backdrop-blur-md active:scale-95 transition-all cursor-pointer"
+                className="absolute right-0 sm:right-2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-none bg-[#2B0F3F] hover:bg-[#6A35A8] border border-[#D9C6F2] text-white flex items-center justify-center active:scale-95 transition-all cursor-pointer"
                 aria-label="Next photo"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -473,38 +406,150 @@ const DetailsPanelContent: React.FC<DetailsPanelContentProps> = ({
   service,
   onImageClick,
 }) => {
-  const photos = getPhotosByServiceId(service.id);
+  const isKidsService = service.id === 'kids-hair';
+  const [kidsTab, setKidsTab] = useState<'girls' | 'boys'>('girls');
+
+  // Read photos from photos.ts by service id
+  const allPhotos = getPhotosByServiceId(service.id);
+  // For kids service, optionally filter or show photos
+  const photos = allPhotos;
   const hasRealPhotos = photos.length > 0;
+
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+
+  const handleScroll = () => {
+    if (!scrollerRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollerRef.current;
+    const maxScroll = scrollWidth - clientWidth;
+    setScrollProgress(maxScroll > 0 ? (scrollLeft / maxScroll) * 100 : 0);
+  };
+
+  const scrollLeftBy = () => {
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollBy({ left: -280, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRightBy = () => {
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollBy({ left: 280, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {hasRealPhotos ? (
-        /* Real Photos Strip (Only real photos, no placeholders) */
-        <div>
-          <p className="font-body text-xs uppercase tracking-wider text-[#2B0F3F]/60 mb-3 font-medium">
-            Client Work ({photos.length}{' '}
-            {photos.length === 1 ? 'Photo' : 'Photos'} · Tap to Enlarge)
-          </p>
+      {/* Kids Hair: Two-Option Toggle (Girls / Boys) */}
+      {isKidsService && (
+        <div className="space-y-4 pb-2 border-b border-[#D9C6F2]/40">
+          <div className="flex items-center gap-2">
+            <span className="font-body text-xs font-semibold uppercase tracking-wider text-[#6A35A8] mr-2">
+              Select:
+            </span>
+            <button
+              type="button"
+              onClick={() => setKidsTab('girls')}
+              className={`px-5 py-1.5 rounded-none text-xs sm:text-sm font-body font-medium transition-colors cursor-pointer ${
+                kidsTab === 'girls'
+                  ? 'bg-[#6A35A8] text-white border border-[#6A35A8] shadow-xs'
+                  : 'bg-transparent text-[#2B0F3F] border border-[#D9C6F2] hover:border-[#6A35A8]'
+              }`}
+            >
+              Girls
+            </button>
+            <button
+              type="button"
+              onClick={() => setKidsTab('boys')}
+              className={`px-5 py-1.5 rounded-none text-xs sm:text-sm font-body font-medium transition-colors cursor-pointer ${
+                kidsTab === 'boys'
+                  ? 'bg-[#6A35A8] text-white border border-[#6A35A8] shadow-xs'
+                  : 'bg-transparent text-[#2B0F3F] border border-[#D9C6F2] hover:border-[#6A35A8]'
+              }`}
+            >
+              Boys
+            </button>
+          </div>
 
-          <div className="flex items-center gap-5 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory scroll-smooth focus:outline-none">
+          <p className="font-body text-sm text-[#2B0F3F]/85 leading-relaxed max-w-xl">
+            {kidsTab === 'girls'
+              ? 'Gentle detangling, braids, twists and styling for girls in a warm, patient environment.'
+              : 'Neat cuts, fades and low-maintenance styles for boys in a calm, welcoming setting.'}
+          </p>
+        </div>
+      )}
+
+      {hasRealPhotos ? (
+        /* Real Photos Horizontal Strip: ONE horizontal row that scrolls sideways, never stacked vertically */
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="font-body text-xs uppercase tracking-wider text-[#2B0F3F]/60 font-medium">
+              Client Work ({photos.length}{' '}
+              {photos.length === 1 ? 'Photo' : 'Photos'} · Tap to Enlarge)
+            </p>
+
+            {/* Desktop Small Square Prev/Next Arrow Buttons (thin white-on-plum, sharp corners) */}
+            {photos.length > 1 && (
+              <div className="hidden sm:flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={scrollLeftBy}
+                  className="w-8 h-8 rounded-none bg-[#2B0F3F] text-white border border-[#D9C6F2] hover:bg-[#6A35A8] flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                  aria-label="Scroll photos left"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={scrollRightBy}
+                  className="w-8 h-8 rounded-none bg-[#2B0F3F] text-white border border-[#D9C6F2] hover:bg-[#6A35A8] flex items-center justify-center transition-colors cursor-pointer active:scale-95"
+                  aria-label="Scroll photos right"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Horizontal Scroller with snap-x snap-mandatory */}
+          <div
+            ref={scrollerRef}
+            onScroll={handleScroll}
+            className="flex items-center gap-4 overflow-x-auto pb-2 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar focus:outline-none"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
             {photos.map((photo, idx) => (
               <PhotoThumbnail
                 key={photo.id}
                 photo={photo}
                 onClick={() => onImageClick(idx)}
-                aspectRatioClass="aspect-[4/5]"
+                widthClass="w-[72vw] sm:w-[260px] max-w-[260px]"
               />
             ))}
           </div>
+
+          {/* Thin Progress Line below scroller on desktop & mobile */}
+          {photos.length > 1 && (
+            <div className="w-full h-[2px] bg-[#D9C6F2]/30 relative overflow-hidden mt-1">
+              <div
+                className="h-full bg-[#6A35A8] transition-all duration-150"
+                style={{
+                  width: `${Math.max(20, 100 / photos.length)}%`,
+                  transform: `translateX(${(scrollProgress * (photos.length - 1)) / 100 * 100}%)`,
+                }}
+              />
+            </div>
+          )}
         </div>
       ) : (
         /* If service has no photos yet: single glass card with "Photos coming soon" */
-        <div className="py-8 px-6 rounded-2xl glass-panel text-center max-w-md mx-auto my-1 border border-[#D9C6F2]/30 flex flex-col items-center justify-center space-y-2">
+        <div className="py-8 px-6 rounded-none glass-panel text-center max-w-md mx-auto my-1 border border-[#D9C6F2] flex flex-col items-center justify-center space-y-2">
           <p className="font-heading font-semibold text-lg text-[#2B0F3F]">
-            Photos coming soon
+            Photo coming soon
           </p>
           <p className="font-body text-xs text-[#2B0F3F]/70">
-            We are currently photographing client work for {service.name}.
+            {isKidsService
+              ? `We are currently photographing client styles for kids ${kidsTab}.`
+              : `We are currently photographing client work for ${service.name}.`}
           </p>
         </div>
       )}

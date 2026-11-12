@@ -32,6 +32,12 @@ export interface ImageSlotConfig {
   objectPosition?: string;
 }
 
+export const SOCIAL_LINKS = {
+  instagram: 'https://www.instagram.com/lux_tresshairstudio',
+  tiktok: 'https://www.tiktok.com/@luxtress.hair.stu',
+  facebook: 'https://www.facebook.com/share/p/1D5uqJM5o8/',
+};
+
 export const SALON_CONFIG = {
   brand: {
     name: 'Luxtress Hair Studio',
@@ -49,9 +55,9 @@ export const SALON_CONFIG = {
     phoneDisplay: '0759 832 002',
     phoneTel: 'tel:+254759832002',
     instagramHandle: '@lux_tresshairstudio',
-    instagramUrl: 'https://instagram.com/lux_tresshairstudio',
-    tiktokUrl: 'TIKTOK_URL_HERE',
-    facebookUrl: 'FACEBOOK_URL_HERE',
+    instagramUrl: SOCIAL_LINKS.instagram,
+    tiktokUrl: SOCIAL_LINKS.tiktok,
+    facebookUrl: SOCIAL_LINKS.facebook,
     directionsUrl: 'https://maps.app.goo.gl/ynNzrR1oEggzngWN9',
     address: 'Acre Tano, inside Rubis Petrol Station',
     hours: 'Open daily, 8:00 AM - 8:00 PM',
@@ -62,7 +68,7 @@ export const SALON_CONFIG = {
     { id: 'services', label: 'Services', href: '#services' },
     { id: 'gallery', label: 'Gallery', href: '#gallery' },
     { id: 'kids', label: 'Kids', href: '#kids' },
-    { id: 'visit', label: 'Visit', href: '#visit' },
+    { id: 'location', label: 'Location', href: '#location' },
   ],
   // Helper to construct service-specific WhatsApp booking links
   getServiceBookingLink: (serviceName: string) => {
