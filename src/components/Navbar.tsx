@@ -1,12 +1,14 @@
 /**
  * Sticky Glass Navbar for Luxtress Hair Studio.
- * Includes inline SVG logo, smooth-scroll links with active indicator,
- * WhatsApp booking CTA, and full-screen mobile plum overlay.
+ * - Transparent over Hero when at top on Home page; solid deep plum on scroll or on any Service Page.
+ * - Circular logo icon on left, menu links aligned right (Our Work, Services, Meet the Team, Location).
+ * - Hides Meet the Team link automatically when TEAM has fewer than 2 entries.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Menu, X } from 'lucide-react';
 import { SALON_CONFIG, SOCIAL_LINKS } from '../config/salon';
+import { TEAM } from '../data/team';
 import { Logo } from './Logo';
 import {
   InstagramOutlineIcon,
@@ -26,34 +28,66 @@ export const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = 'w-
   </svg>
 );
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  forceSolid?: boolean;
+  activeServiceSlug?: string | null;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  forceSolid = false,
+  activeServiceSlug = null,
+}) => {
   const [activeSection, setActiveSection] = useState<string>('home');
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [scrolled, setScrolled] = useState<boolean>(false);
 
-  // Monitor scroll for glass opacity increase & section spy
+  const isTeamVisible = TEAM.length >= 2;
+
+  const visibleNavLinks = useMemo(
+    () =>
+      SALON_CONFIG.navLinks.filter((link) => {
+        if (link.id === 'team') return isTeamVisible;
+        return true;
+      }),
+    [isTeamVisible]
+  );
+
+  // Sync active indicator when viewing a service page
+  useEffect(() => {
+    if (activeServiceSlug) {
+      setActiveSection('services');
+    }
+  }, [activeServiceSlug]);
+
+  // Monitor scroll for glass opacity increase & home page section spy
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
 
-      // Section spy
-      const sections = SALON_CONFIG.navLinks.map((link) => link.id);
+      if (activeServiceSlug) return;
+
+      const sectionIds = visibleNavLinks.map((link) => link.id);
       const scrollPos = window.scrollY + 200;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const id = sections[i];
+      let matched = 'home';
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i];
         const el = document.getElementById(id);
-        if (el && el.offsetTop <= scrollPos) {
-          setActiveSection(id);
-          break;
+        if (el) {
+          const elTop = el.getBoundingClientRect().top + window.scrollY;
+          if (elTop <= scrollPos) {
+            matched = id;
+            break;
+          }
         }
       }
+      setActiveSection(matched);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [activeServiceSlug, visibleNavLinks]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -73,35 +107,64 @@ export const Navbar: React.FC = () => {
     id: string
   ) => {
     e.preventDefault();
+    const wasMobileOpen = mobileMenuOpen;
     setActiveSection(id);
     setMobileMenuOpen(false);
+    document.body.style.overflow = '';
 
-    const target = document.querySelector(href);
-    if (target) {
-      const topOffset = 88; // header height + 16px
-      const elementPosition = target.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - topOffset;
+    const navigateAndScroll = () => {
+      const wasOnServicePage = Boolean(activeServiceSlug);
+      if (window.location.hash !== href) {
+        window.location.hash = href;
+      }
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
+      if (wasOnServicePage) {
+        return;
+      }
+
+      if (id === 'home') {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+        return;
+      }
+
+      const target = document.querySelector(href);
+      if (target) {
+        const topOffset = 88;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - topOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    if (wasMobileOpen) {
+      requestAnimationFrame(() => navigateAndScroll());
+    } else {
+      navigateAndScroll();
     }
   };
 
+  const isSolidHeader = forceSolid || scrolled;
+
   return (
     <>
-      {/* Sticky Header Container: transparent over hero, solid plum on scroll */}
+      {/* Sticky Header Container: transparent over hero, solid deep plum on scroll or service pages */}
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          scrolled
+          isSolidHeader
             ? 'bg-[#2B0F3F]/95 backdrop-blur-md border-b border-[#D9C6F2]/20 shadow-md py-3'
             : 'bg-transparent border-b border-transparent py-4 sm:py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-8">
-            {/* Zone 1: Circular Logo Icon only (no wordmark) */}
+            {/* Circular Logo Icon only */}
             <a
               href="#home"
               onClick={(e) => handleNavClick(e, '#home', 'home')}
@@ -111,9 +174,9 @@ export const Navbar: React.FC = () => {
               <Logo size="md" showWordmark={false} />
             </a>
 
-            {/* Desktop Navigation Links aligned to the right (no button) */}
+            {/* Desktop Navigation Links aligned to the right */}
             <nav className="hidden md:flex items-center gap-8 ml-auto text-sm font-medium">
-              {SALON_CONFIG.navLinks.map((link) => {
+              {visibleNavLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
                   <a
@@ -179,7 +242,7 @@ export const Navbar: React.FC = () => {
           <div className="px-6 py-8 flex flex-col gap-6">
             <span className="label-uppercase text-xs">Navigation</span>
             <div className="flex flex-col gap-4">
-              {SALON_CONFIG.navLinks.map((link) => {
+              {visibleNavLinks.map((link) => {
                 const isActive = activeSection === link.id;
                 return (
                   <a

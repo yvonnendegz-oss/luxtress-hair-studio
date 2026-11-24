@@ -17,7 +17,7 @@ export const VisitSection: React.FC = () => {
   return (
     <section
       id="visit"
-      className="bg-[#FBF8FE] text-[#2B0F3F] py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 border-b border-[#D9C6F2]/30"
+      className="bg-[#FBF8FE] text-[#2B0F3F] py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-[#D9C6F2]/30"
       aria-label="Luxtress Hair Studio Location"
     >
       <div className="max-w-4xl mx-auto">
@@ -28,10 +28,10 @@ export const VisitSection: React.FC = () => {
           className="scroll-mt-[88px] p-6 sm:p-8 rounded-2xl bg-white border border-[#D9C6F2] shadow-xl space-y-6"
         >
           {/* Heading: "Location" + single address line under it */}
-          <div className="space-y-1">
-            <h3 className="font-heading font-semibold text-2xl text-[#2B0F3F]">
+          <div className="space-y-1.5">
+            <h2 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#2B0F3F] tracking-tight leading-tight">
               Location
-            </h3>
+            </h2>
             <p className="font-body text-sm text-[#2B0F3F]/80">
               Acre Tano, inside Rubis Petrol Station
             </p>

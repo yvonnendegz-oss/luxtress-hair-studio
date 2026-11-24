@@ -17,7 +17,10 @@ export interface ServiceImage {
 
 export interface ServiceItem {
   id: string;
+  slug: string;
   name: string;
+  tagline: string;
+  bannerPhoto?: string;
   audiences: Audience[];
   images?: ServiceImage[];
 }
@@ -64,15 +67,16 @@ export const SALON_CONFIG = {
     hoursBadge: 'Open daily · 8 AM - 8 PM',
   },
   navLinks: [
-    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'work', label: 'Our Work', href: '#work' },
     { id: 'services', label: 'Services', href: '#services' },
-    { id: 'gallery', label: 'Gallery', href: '#gallery' },
-    { id: 'kids', label: 'Kids', href: '#kids' },
+    { id: 'team', label: 'Meet the Team', href: '#team' },
     { id: 'location', label: 'Location', href: '#location' },
   ],
   // Helper to construct service-specific WhatsApp booking links
   getServiceBookingLink: (serviceName: string) => {
-    const encodedText = encodeURIComponent(`Hi Luxtress, I'd like to book ${serviceName}`);
+    const encodedText = encodeURIComponent(
+      `Hi Luxtress, I'd like to book ${serviceName}.`
+    );
     return `https://wa.me/254759832002?text=${encodedText}`;
   },
   // Marquee highlights between Hero and Services (all 14 services in sequence)
@@ -110,7 +114,7 @@ export const SALON_CONFIG = {
       subtitle: 'Elegance Meets Confidence',
       aspectRatio: '4/5',
       shape: 'arch',
-      imageUrl: '/images/work/boho-braids.jpg', // boho-braids.jpg
+      imageUrl: '/images/work/boho-braids.jpg',
       alt: 'Knotless braids with curly ends',
       objectPosition: 'object-[center_28%]',
     } as ImageSlotConfig & { shape?: 'arch' | 'oval' | 'rounded-rectangle' },
@@ -129,72 +133,114 @@ export const SALON_CONFIG = {
   services: [
     {
       id: 'haircuts',
+      slug: 'haircuts',
       name: 'Haircuts',
+      tagline: 'Clean shaping, trims, and fades tailored to your hair.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men', 'Kids'],
     },
     {
       id: 'hairdressing',
+      slug: 'hairdressing',
       name: 'Hairdressing',
+      tagline: 'Polished blowouts, sets, and everyday styling.',
+      bannerPhoto: '',
       audiences: ['Women', 'Kids'],
     },
     {
       id: 'braiding',
+      slug: 'braiding',
       name: 'Braiding',
+      tagline: 'Neat, protective braids crafted for comfort and longevity.',
+      bannerPhoto: '',
       audiences: ['Women', 'Kids'],
     },
     {
       id: 'weaving',
+      slug: 'weaving',
       name: 'Weaving',
+      tagline: 'Natural-looking tracks and seamless install finishes.',
+      bannerPhoto: '',
       audiences: ['Women'],
     },
     {
       id: 'dreadlocks-installation',
+      slug: 'dreadlocks-installation',
       name: 'Dreadlocks Installation',
+      tagline: 'Thoughtful parting and starter locs built to mature neatly.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men'],
     },
     {
       id: 'sisterlocks-retouch',
+      slug: 'sisterlocks-retouch',
       name: 'Sisterlocks Retouch',
+      tagline: 'Gentle root maintenance to keep your grid neat and balanced.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men'],
     },
     {
       id: 'hair-treatment',
+      slug: 'hair-treatment',
       name: 'Hair Treatment',
+      tagline: 'Nourishing steam and conditioning care for healthier hair.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men'],
     },
     {
       id: 'hair-dye',
+      slug: 'hair-dye',
       name: 'Hair Dye',
+      tagline: 'Even, considered colour work with conditioning protection.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men', 'Kids'],
     },
     {
       id: 'manicure',
+      slug: 'manicure',
       name: 'Manicure',
+      tagline: 'Clean cuticle care, shaping, and lasting polish finishes.',
+      bannerPhoto: '',
       audiences: ['Women'],
     },
     {
       id: 'pedicure',
+      slug: 'pedicure',
       name: 'Pedicure',
+      tagline: 'Soothing foot care, exfoliation, and neat nail grooming.',
+      bannerPhoto: '',
       audiences: ['Women'],
     },
     {
       id: 'make-up',
+      slug: 'make-up',
       name: 'Make-up',
+      tagline: 'Soft, balanced application tailored to your features.',
+      bannerPhoto: '',
       audiences: ['Women'],
     },
     {
       id: 'face-scrub',
+      slug: 'face-scrub',
       name: 'Face Scrub',
+      tagline: 'Gentle exfoliation to leave skin clear, calm, and refreshed.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men'],
     },
     {
       id: 'piercings',
+      slug: 'piercings',
       name: 'Piercings',
+      tagline: 'Careful, hygienic placement with clear aftercare guidance.',
+      bannerPhoto: '',
       audiences: ['Women', 'Men'],
     },
     {
-      id: 'kids-hair',
-      name: 'Kids\' Hair',
+      id: 'kids',
+      slug: 'kids',
+      name: "Kids' Hair",
+      tagline: 'Patient, gentle hair care and neat styles for children.',
+      bannerPhoto: '',
       audiences: ['Kids'],
     },
   ] as ServiceItem[],

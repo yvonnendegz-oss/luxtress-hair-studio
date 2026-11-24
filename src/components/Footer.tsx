@@ -1,11 +1,10 @@
 /**
  * Footer Component for Luxtress Hair Studio.
  * - Deep plum-900 background, generous padding.
- * - Starts directly at "VISIT US" (brand block removed).
- * - 3 Columns on desktop, stacked on mobile:
- *   Col 1: "VISIT US" (address & phone)
- *   Col 2: "HOURS" ("Open daily, 8:00 AM - 8:00 PM")
- *   Col 3: "FOLLOW US" (Instagram, TikTok, Facebook thin-line icons)
+ * - Starts directly at "VISIT US" (no brand block, no duplicate Hours section).
+ * - 2 Columns on desktop ("VISIT US" and "FOLLOW US"), stacked on mobile with normal spacing:
+ *   Col 1: "VISIT US" (address, hours "Open daily · 8:00 AM – 8:00 PM", muted "Walk-ins are welcome.", phone)
+ *   Col 2: "FOLLOW US" (Instagram, TikTok, Facebook thin-line icons)
  * - Bottom bar: thin lavender divider + copyright + "Back to top" button.
  */
 
@@ -56,11 +55,11 @@ export const Footer: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 3-Column Grid on Desktop (starts at VISIT US), Stacked on Mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14 pb-16">
+        {/* 2-Column Grid on Desktop ("VISIT US" and "FOLLOW US"), Stacked on Mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-14 pb-16">
           {/* Column 1: Visit Us */}
-          <div className="space-y-3.5">
-            <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
+          <div className="space-y-4">
+            <h3 className="font-heading font-semibold text-3xl sm:text-4xl lg:text-5xl text-[#D9C6F2] tracking-tight leading-tight">
               Visit Us
             </h3>
             <div className="space-y-3 font-body text-sm text-white/90">
@@ -69,9 +68,14 @@ export const Footer: React.FC = () => {
                 <p className="leading-relaxed">{SALON_CONFIG.contact.address}</p>
               </div>
 
-              <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-[#D9C6F2] shrink-0" />
-                <span>Open daily · 8:00 AM – 8:00 PM</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#D9C6F2] shrink-0" />
+                  <span>Open daily · 8:00 AM – 8:00 PM</span>
+                </div>
+                <p className="text-xs text-[#D9C6F2]/70 leading-relaxed pl-[26px]">
+                  Walk-ins are welcome.
+                </p>
               </div>
 
               <div className="pt-1">
@@ -85,23 +89,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 2: Hours */}
-          <div className="space-y-3.5">
-            <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
-              Hours
-            </h3>
-            <div className="space-y-2 font-body text-sm text-white/90">
-              <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-[#D9C6F2] shrink-0" />
-                <span>Open daily · 8:00 AM – 8:00 PM</span>
-              </div>
-              <p className="text-xs text-[#D9C6F2]/70 pt-1 leading-relaxed">
-                Walk-ins are welcome.
-              </p>
-            </div>
-          </div>
-
-          {/* Column 3: Follow Us */}
+          {/* Column 2: Follow Us */}
           <div className="space-y-4">
             <h3 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-[#D9C6F2]">
               Follow Us
